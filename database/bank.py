@@ -7,24 +7,21 @@ from init_db import Base, engine, Session
 class Account(Base):
     __tablename__ = 'account'
     id = Column(Integer, primary_key=True)
-    balance = Column(Float, default=0)
+    balance = Column(Float, default=0.0)
     transactions = relationship("Transaction", back_populates="account")
 
     def __init__(self, balance):
         self.balance = balance
     
     def create_account(self, balance):
-        pass
-        #Function in Account to create new account with initial balance if value exist or par default 0
-        # new_account = Account(balance)
-        # session = Session()
-        # session.add(new_account)
-        # session.commit()
+        new_account = Account(balance)
+        session = Session()
+        session.add(new_account)
+        session.commit()
 
     def get_balance(self):
-        #Function in Account to return the balance amount on your account
-        # return self.balance
-        pass
+        return self.balance
+
 
     def __repr__(self):
 	    return f"<Account(id='{self.id}', balance='{self.balance}')>"
@@ -39,9 +36,10 @@ class Transaction(Base):
     account_id = Column(Integer, ForeignKey('account.id'))
     account = relationship("Account", back_populates="transactions")
     
-    def __init__(self, amount, type):
+    def __init__(self, amount, type, timestamp):
         self.amount = amount
         self.type = type
+        self.timestamp = datetime.now()
     
     def deposit(self, amount):
         pass

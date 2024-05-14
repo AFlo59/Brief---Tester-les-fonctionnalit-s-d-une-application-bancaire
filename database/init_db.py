@@ -6,5 +6,5 @@ from datetime import datetime
 Base = declarative_base()
 engine = create_engine('sqlite:///Bank.db')
 Session = scoped_session(sessionmaker(bind=engine))
-# Base.metadata.create_all(engine)
+Base.metadata.create_all(engine)
 ######
