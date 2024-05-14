@@ -2,7 +2,7 @@ from sqlalchemy import create_engine, Column, Integer, String, DateTime, Foreign
 from sqlalchemy.orm import declarative_base, sessionmaker, scoped_session, relationship
 from datetime import datetime
 
-from .init_db import Base, engine, Session
+from init_db import Base, engine, Session
 
 class Account(Base):
     __tablename__ = 'account'
