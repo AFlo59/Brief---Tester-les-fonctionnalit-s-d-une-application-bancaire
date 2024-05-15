@@ -43,24 +43,32 @@ class Transaction(Base):
         self.amount = amount
         self.type = "Deposit"
         self.timestamp = datetime.now()
-        self.accounts.append(account)
 
+        self.accounts.append(account)
         session.add(self)
+
+        account.balance += amount
+        session.add(account)
         session.commit()
 
     def withdraw(self, session, amount, account):
         self.amount = amount
         self.type = "Withdraw"
         self.timestamp = datetime.now()
-        self.accounts.append(account)
 
+        self.accounts.append(account)
         session.add(self)
+        account.balance -= amount
+        session.add(account)
         session.commit()
 
     def transfer(self, session, amount, account_source, account_target):
         if account_source == account_target:
             raise ValueError("Le compte cible doit être différent du compte source.")
-        
+        self.amount = amount
+        self.type = "Transfer"
+        self.timestamp = datetime.now()
+
         withdrawal = Transaction(amount=-amount, type="Withdraw")
         withdrawal.accounts.append(account_source)
         session.add(withdrawal)
