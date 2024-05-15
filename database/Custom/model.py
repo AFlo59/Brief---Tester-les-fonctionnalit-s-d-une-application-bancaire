@@ -43,7 +43,7 @@ class Transaction(Base):
     accounts = relationship('Account', secondary=account_transaction_association, back_populates='transactions', overlaps="accounts")
 
     def deposit(self, session, amount, account):
-        if amount < 0:
+        if amount <= 0:
             raise ValueError("Deposit amount must be superior to zero.")
         
         self.amount = amount
@@ -60,7 +60,7 @@ class Transaction(Base):
 
 
     def withdraw(self, session, amount, account):
-        if amount < 0:
+        if amount <= 0:
             raise ValueError("Withdrawal amount must be superior to zero.")
         
         self.amount = amount
