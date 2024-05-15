@@ -1,6 +1,11 @@
 import pytest
 from database.Custom.model import *
+from unittest.mock import patch
 
+# def test_calculate_tax():
+#     with patch('source.pricing_module.fetch_product_price', return_value=100.0) as mock_fetch:
+#         assert calculate_tax(2) == 20.0  # 20% de 100.0
+#         mock_fetch.assert_called_once_with(2)
 
 def test_deposit(account_factory, deposit_factory):
     account = account_factory(0)
