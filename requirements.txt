@@ -3,3 +3,4 @@ requests
 SQLAlchemy<2
 mysql-connector-python
 python-dotenv
+mock-alchemy
