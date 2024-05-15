@@ -16,7 +16,7 @@ account_transaction_association = Table(
 class Account(Base):
     __tablename__ = 'account'
     id = Column(Integer, primary_key=True)
-    balance = Column(Integer)
+    balance = Column(Float, default=0.0)
     transactions = relationship('Transaction', secondary=account_transaction_association, back_populates='accounts', overlaps="transaction_accounts")
 
     def create_account(self, session, initial_balance=None):
@@ -29,6 +29,9 @@ class Account(Base):
 
     def get_balance(self):
         return self.balance
+    
+    def __repr__(self):
+        return f"Account(id={self.id}, balance={self.balance:.2f})"
 
 
 class Transaction(Base):
@@ -42,13 +45,16 @@ class Transaction(Base):
     def deposit(self, session, amount, account):
         if amount < 0:
             raise ValueError("Deposit amount must be superior to zero.")
+        
         self.amount = amount
         self.type = "Deposit"
         self.timestamp = datetime.now()
         self.accounts.append(account)
+
         session.add(self)
         account.balance += amount
         session.add(account)
+
         session.commit()
         return self  
 
@@ -56,15 +62,19 @@ class Transaction(Base):
     def withdraw(self, session, amount, account):
         if amount < 0:
             raise ValueError("Withdrawal amount must be superior to zero.")
+        
         self.amount = amount
         self.type = "Withdraw"
         self.timestamp = datetime.now()
         self.accounts.append(account)
+
         if self.amount > account.balance:
             raise ValueError("Insufficient funds.")
+        
         session.add(self)
         account.balance -= amount
         session.add(account)
+
         session.commit()
         return self
 
