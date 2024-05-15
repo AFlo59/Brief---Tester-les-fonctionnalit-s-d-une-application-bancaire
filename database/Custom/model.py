@@ -1,9 +1,8 @@
 from sqlalchemy import Column, Integer, Float, String, DateTime, ForeignKey, Table
-from sqlalchemy.orm import relationship, Session
+from sqlalchemy.orm import relationship, sessionmaker, Session
 from sqlalchemy.ext.declarative import declarative_base
-
-
 from datetime import datetime
+from sqlalchemy import create_engine
 
 Base = declarative_base()
 
@@ -20,13 +19,13 @@ class Account(Base):
     balance = Column(Integer)
     transactions = relationship('Transaction', secondary=account_transaction_association, back_populates='accounts', overlaps="transaction_accounts")
 
-    def create_account(self,Session, initial_balance=None):
+    def create_account(self, session, initial_balance=None):
         if initial_balance is not None:
             self.balance = initial_balance
         else:
             self.balance = 0.0
-            Session.add(self)
-            Session.commit()
+        session.add(self)
+        session.commit()
 
     def get_balance(self):
         return self.balance
@@ -40,35 +39,42 @@ class Transaction(Base):
     timestamp = Column(DateTime, default=datetime.now)
     accounts = relationship('Account', secondary=account_transaction_association, back_populates='transactions', overlaps="accounts")
 
-    def deposit(self, Session, amount):
+    def deposit(self, session, amount, account):
         self.amount = amount
         self.type = "Deposit"
         self.timestamp = datetime.now()
+        self.accounts.append(account)
 
-        Session.add(self)
-        Session.commit()
+        session.add(self)
+        session.commit()
 
- 
-
-    def withdraw(self, Session, amount):
+    def withdraw(self, session, amount, account):
         self.amount = amount
         self.type = "Withdraw"
         self.timestamp = datetime.now()
+        self.accounts.append(account)
 
-        Session.add(self)
-        Session.commit()
+        session.add(self)
+        session.commit()
 
- 
-
-    def transfer(self, Session, amount, account_target):
-        if account_target == self.accounts[0]:
+    def transfer(self, session, amount, account_source, account_target):
+        if account_source == account_target:
             raise ValueError("Le compte cible doit être différent du compte source.")
-        self.withdraw(amount)
-        deposit_transaction = Transaction(amount=amount, type="Deposit")
-        deposit_transaction.accounts.append(account_target)
-        self.accounts[0].transactions.append(deposit_transaction)
+        
+        withdrawal = Transaction(amount=-amount, type="Withdraw")
+        withdrawal.accounts.append(account_source)
+        session.add(withdrawal)
 
-        Session.add(self)
-        Session.add(deposit_transaction)
-        Session.commit()
+        account_source.balance -= amount
+        session.add(account_source)
+        
+        deposit = Transaction(amount=amount, type="Deposit")
+        deposit.accounts.append(account_target)
+        session.add(deposit)
+
+        account_target.balance += amount
+        session.add(account_target)
+        
+        session.commit()
+
 
