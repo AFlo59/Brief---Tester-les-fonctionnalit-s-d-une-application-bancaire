@@ -1,61 +1,82 @@
 import pytest
-from database.Custom.model import *
+from database.Custom.model import Base, Account, Transaction
 from unittest.mock import patch
 
-# def test_calculate_tax():
-#     with patch('source.pricing_module.fetch_product_price', return_value=100.0) as mock_fetch:
-#         assert calculate_tax(2) == 20.0  # 20% de 100.0
-#         mock_fetch.assert_called_once_with(2)
+# def session(engine, tables):
+#     # Créez une mock session utilisant UnifiedAlchemyMagicMock
+#     session = UnifiedAlchemyMagicMock()
+#     yield session
+#     session.rollback()
+class TestDeposit:
 
-def test_deposit(account_factory, deposit_factory):
-    account = account_factory(0)
-    deposit = deposit_factory(50, account)
+    def test_deposit(self):
+        account = Account.create_account(session, 0.0)
+        self.deposit = Transaction.deposit(session, 50, account)
 
-    account.deposit(deposit)
-    assert account.get_balance() == 50
+        assert Account.balance == 50.0
+    def test_deposit_amount_null(self):
+        account = Account.create_account(session, 50.0)
+        self.deposit = Transaction.deposit(session, 0, account)
 
-def test_deposit_amount_null(account_factory, deposit_factory):
-    account = account_factory(50)
-    deposit = deposit_factory(0, account)
+        assert Account.balance == 50.0
 
-    account.deposit(deposit)
-    assert account.get_balance() == 50
+    def test_deposit_amount_negatif(self):
+        account = Account.create_account(session, 50.0)
+        self.deposit = Transaction.deposit(session, -50.0, account)
 
-def test_deposit_amount_negatif(account_factory, deposit_factory):
-    account = account_factory(50)
-    deposit = deposit_factory(-50, account)
+        assert Account.balance == 50.0
 
-    account.deposit(deposit)
-    assert account.get_balance() == 50
+class TestWithdraw:
+    def test_withdraw(self):
+        account = Account.create_account(session, 100.0)
+        self.withdraw = Transaction.withdraw(session, 50.0, account)
 
-def test_withdraw(account_factory, withdraw_factory):
-    account = account_factory(100)
-    withdraw = withdraw_factory(50, account)
+        assert account == True
+        assert account(Account.balance) == 50.0
 
-    account.withdraw(withdraw)
-    assert account.get_balance() == 50
+    def test_withdraw__amount_null(self):
+        account = Account.create_account(session, 50.0)
+        self.withdraw = Transaction.withdraw(session, 0, account)
 
-def test_withdraw__amount_null(account_factory, withdraw_factory):
-    account = account_factory(100)
-    withdraw = withdraw_factory(0, account)
+        assert account == True
+        assert account(Account.balance) == 50.0
 
-    account.withdraw(withdraw)
-    assert account.get_balance() == 100
+    def test_withdraw_amount_negatif(self):
+        account = Account.create_account(session, 50.0)
+        self.withdraw = Transaction.withdraw(session, -50.0, account)
 
-def test_withdraw_amount_negatif(account_factory, withdraw_factory):
-    account = account_factory(100)
-    withdraw = withdraw_factory(-50, account)
+        assert account == True
+        assert account(Account.balance) == 50.0
 
-    account.withdraw(withdraw)
-    assert account.get_balance() == 100
+    def test_withdraw_balance_null(self):
+        account = Account.create_account(session, 0.0)
+        self.withdraw = Transaction.withdraw(session, 50.0, account)
 
-def test_transfer(account_factory, transfer_factory):
-    account_source = account_factory(1000)
-    account_target = account_factory(0.0)
-    transfer = transfer_factory(1000, account_source, account_target)
+        assert account == True
+        assert account(Account.balance) == 0.0
 
-    transfer.transfer(transfer)
-    assert account_source.get_balance() == 0.0 and account_target.get_balance() == 1000
+    def test_withdraw_balance_negatif(self):
+        account = Account.create_account(session, 50.0)
+        self.withdraw = Transaction.withdraw(session, 100.0, account)
+
+        assert account == True
+        assert account(Account.balance) == 50.0
+
+    def test_withdraw_balance_negatif_debt(self):
+        account = Account.create_account(session, 50.0)
+        self.withdraw = Transaction.withdraw(session, -100.0, account)
+
+        assert account == True
+        assert account(Account.balance) == 50.0
+
+class TestTransfer:
+
+    def test_transfer(self):
+        account_source = Account.create_account(session, 1000.0)
+        account_target = Account.create_account(session, 0.0)
+        self.transfer = Transaction.transfer(session, -100.0, account_source, account_target)
+
+        assert account_source == True
+        assert account_target == True
+        assert account_source(Account.balance) == 0.0 and account_target(Account.balance) == 1000
     
-
-
