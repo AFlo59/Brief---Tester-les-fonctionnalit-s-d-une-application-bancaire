@@ -46,7 +46,6 @@ class Transaction(Base):
         self.type = "Deposit"
         self.timestamp = datetime.now()
         self.accounts.append(account)
-        
         session.add(self)
         account.balance += amount
         session.add(account)
