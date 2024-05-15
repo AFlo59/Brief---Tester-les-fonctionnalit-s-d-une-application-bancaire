@@ -22,6 +22,7 @@ def main():
         session = Session()
         
         insert_data(session)
+        
         update_data(session)
 
         session.close()

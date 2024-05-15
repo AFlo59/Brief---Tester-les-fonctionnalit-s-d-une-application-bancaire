@@ -7,6 +7,11 @@ def update_data(session):
         if account1:
             transaction = Transaction()
             transaction.transfer(session, amount=50, account_source=account1, account_target=account2)
+
+        account3 = session.query(Account).filter(Account.id == 3).first()
+        if account3:
+            transaction = Transaction()
+            transaction.deposit(session, amount=99.99, account=account3)
         
         session.commit()
         print("Données modifiés avec succès.")
