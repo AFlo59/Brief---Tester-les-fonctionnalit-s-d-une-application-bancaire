@@ -9,36 +9,39 @@ def create_database(engine):
     except Exception as e:
         print("Erreur lors de la création de la base de données:", e)
 
-def insert_data(engine):
+def insert_data(session):
     try:
-
-        Session = sessionmaker(bind=engine)
-        session = Session()  
-
         account1 = Account(balance=100)
         account2 = Account(balance=50)
-        account3 = Account()
-        session.add(account3)
+        account3 = Account(balance=0)
+
         session.add(account1)
         session.add(account2)
-
-
+        session.add(account3)
+        
         session.commit()
-        session.close()
-
         print("Données insérées avec succès.")
     except Exception as e:
+        session.rollback()
         print("Erreur lors de l'insertion des données:", e)
 
 def main():
     try:
-
         engine = create_engine('sqlite:///Bank.db')
         create_database(engine)
         
-
-        insert_data(engine)
+        Session = sessionmaker(bind=engine)
+        session = Session()
         
+        insert_data(session)
+
+        account1 = session.query(Account).first()
+        if account1:
+            account1.create_account(session, initial_balance=200)
+            transaction = Transaction()
+            transaction.deposit(session, amount=50, account=account1)
+        
+        session.close()
     except Exception as e:
         print("Une erreur s'est produite:", e)
 
