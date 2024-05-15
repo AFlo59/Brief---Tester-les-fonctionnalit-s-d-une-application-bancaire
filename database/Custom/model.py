@@ -40,49 +40,56 @@ class Transaction(Base):
     accounts = relationship('Account', secondary=account_transaction_association, back_populates='transactions', overlaps="accounts")
 
     def deposit(self, session, amount, account):
+        if amount < 0:
+            raise ValueError("Deposit amount must be superior to zero.")
         self.amount = amount
         self.type = "Deposit"
         self.timestamp = datetime.now()
-
         self.accounts.append(account)
+        
         session.add(self)
-
         account.balance += amount
         session.add(account)
         session.commit()
+        return self  
+
 
     def withdraw(self, session, amount, account):
+        if amount < 0:
+            raise ValueError("Withdrawal amount must be superior to zero.")
         self.amount = amount
         self.type = "Withdraw"
         self.timestamp = datetime.now()
-
         self.accounts.append(account)
+        if self.amount > account.balance:
+            raise ValueError("Insufficient funds.")
         session.add(self)
         account.balance -= amount
         session.add(account)
         session.commit()
+        return self
+
 
     def transfer(self, session, amount, account_source, account_target):
         if account_source == account_target:
             raise ValueError("Le compte cible doit être différent du compte source.")
-        self.amount = amount
-        self.type = "Transfer"
-        self.timestamp = datetime.now()
-
-        withdrawal = Transaction(amount=-amount, type="Withdraw")
-        withdrawal.accounts.append(account_source)
-        session.add(withdrawal)
-
-        account_source.balance -= amount
-        session.add(account_source)
         
-        deposit = Transaction(amount=amount, type="Deposit")
-        deposit.accounts.append(account_target)
+        withdrawal = Transaction()
+        withdrawal.withdraw(session, amount, account_source)
+    
+        if withdrawal.amount != amount:
+            raise ValueError("Withdrawal failed.")
+        
+        deposit = Transaction()
+        deposit.deposit(session, amount, account_target)
+            
+        session.add(withdrawal)
         session.add(deposit)
 
-        account_target.balance += amount
-        session.add(account_target)
-        
         session.commit()
+        return withdrawal, deposit
+
+        
+
 
 
