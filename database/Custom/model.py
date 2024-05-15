@@ -1,8 +1,7 @@
 from sqlalchemy import Column, Integer, Float, String, DateTime, ForeignKey, Table
-from sqlalchemy.orm import relationship, sessionmaker, Session
+from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
-from sqlalchemy import create_engine
 
 Base = declarative_base()
 
@@ -18,6 +17,9 @@ class Account(Base):
     id = Column(Integer, primary_key=True)
     balance = Column(Float, default=0.0)
     transactions = relationship('Transaction', secondary=account_transaction_association, back_populates='accounts', overlaps="transaction_accounts")
+
+    def __init__(self, balance=0.0):
+        self.balance = balance
 
     def create_account(self, session, initial_balance=None):
         if initial_balance is not None:
@@ -42,7 +44,10 @@ class Transaction(Base):
     timestamp = Column(DateTime, default=datetime.now)
     accounts = relationship('Account', secondary=account_transaction_association, back_populates='transactions', overlaps="accounts")
 
-    def deposit(self, session, amount, account):
+    def __init__(self, session=None):
+        self.session = session
+
+    def deposit(self, amount, account):
         if amount <= 0:
             raise ValueError("Deposit amount must be superior to zero.")
         
@@ -51,15 +56,15 @@ class Transaction(Base):
         self.timestamp = datetime.now()
         self.accounts.append(account)
 
-        session.add(self)
+        self.session.add(self)
         account.balance += amount
-        session.add(account)
+        self.session.add(account)
 
-        session.commit()
+        self.session.commit()
         return self  
 
 
-    def withdraw(self, session, amount, account):
+    def withdraw(self, amount, account):
         if amount <= 0:
             raise ValueError("Withdrawal amount must be superior to zero.")
         
@@ -71,34 +76,29 @@ class Transaction(Base):
         if self.amount > account.balance:
             raise ValueError("Insufficient funds.")
         
-        session.add(self)
+        self.session.add(self)
         account.balance -= amount
-        session.add(account)
+        self.session.add(account)
 
-        session.commit()
+        self.session.commit()
         return self
 
 
-    def transfer(self, session, amount, account_source, account_target):
+    def transfer(self, amount, account_source, account_target):
         if account_source == account_target:
             raise ValueError("Le compte cible doit être différent du compte source.")
         
-        withdrawal = Transaction()
-        withdrawal.withdraw(session, amount, account_source)
+        withdrawal = Transaction(session=self.session)
+        withdrawal.withdraw(amount, account_source)
     
         if withdrawal.amount != amount:
             raise ValueError("Withdrawal failed.")
         
-        deposit = Transaction()
-        deposit.deposit(session, amount, account_target)
+        deposit = Transaction(session=self.session)
+        deposit.deposit(amount, account_target)
             
-        session.add(withdrawal)
-        session.add(deposit)
+        self.session.add(withdrawal)
+        self.session.add(deposit)
 
-        session.commit()
+        self.session.commit()
         return withdrawal, deposit
-
-        
-
-
-

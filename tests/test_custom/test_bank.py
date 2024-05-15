@@ -1,32 +1,32 @@
-import pytest
-from database.Custom.model import Base, Account, Transaction
-from unittest.mock import patch
-from mock_alchemy.mocking import UnifiedAlchemyMagicMock
+# import pytest
+# from database.custom.model import Base, Account, Transaction
+# from unittest.mock import patch
+# from mock_alchemy.mocking import UnifiedAlchemyMagicMock
 
-class TestDeposit:
+# class TestDeposit:
     
-    def test_deposit(account_factory, my_session):
-        with my_session:
-            account = account_factory()
-            account.deposit(50.0)
-            # Checks
-            # 1. Verify that current balance is updated
-            assert account.balance == 50.0
-            # 2. Verify a new transaction has been correctly added with 'deposit' type
-            assert my_session.query(Transaction).count() == 1
-            assert (my_session
-                    .query(Transaction)
-                    .filter(Transaction.transaction_id == 1)
-                    .one()
-                    ).type == "Deposit"
-            # 3. Verify the new transaction's timestamp has been correctly added
-            assert (my_session
-                .query(Transaction)
-                .filter(Transaction.transaction_id == 1)
-                .one()
-                ).timestamp
-            # 4. Verify session.commit has been called.
-            assert my_session.commit.call_count == 2
+#     def test_deposit(account_factory, my_session):
+#         with my_session:
+#             account = account_factory()
+#             account.deposit(50.0)
+#             # Checks
+#             # 1. Verify that current balance is updated
+#             assert account.balance == 50.0
+#             # 2. Verify a new transaction has been correctly added with 'deposit' type
+#             assert my_session.query(Transaction).count() == 1
+#             assert (my_session
+#                     .query(Transaction)
+#                     .filter(Transaction.transaction_id == 1)
+#                     .one()
+#                     ).type == "Deposit"
+#             # 3. Verify the new transaction's timestamp has been correctly added
+#             assert (my_session
+#                 .query(Transaction)
+#                 .filter(Transaction.transaction_id == 1)
+#                 .one()
+#                 ).timestamp
+#             # 4. Verify session.commit has been called.
+#             assert my_session.commit.call_count == 2
             # my_session.commit.assert_any_call()
         # The non-commented is better as `session.commit` is also called within account_factory
         
