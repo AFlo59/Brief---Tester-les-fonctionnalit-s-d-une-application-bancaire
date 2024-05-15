@@ -1,6 +1,6 @@
 pytest
 requests
-SQLAlchemy<2
+SQLAlchemy
 mysql-connector-python
 python-dotenv
 mock-alchemy
