@@ -3,12 +3,24 @@ from database.Custom.model import *
 
 @pytest.fixture
 def account_factory():
-    def create_account(session,initial_balance):
+    def create_account():
         return Account()
     return create_account
 
 @pytest.fixture
-def transaction_factory():
-    def create_transaction(session, type, amount, account):
+def deposit_factory():
+    def deposit():
         return Transaction()
-    return create_transaction
+    return deposit
+
+@pytest.fixture
+def withdraw_factory():
+    def withdraw():
+        return Transaction()
+    return withdraw
+
+@pytest.fixture
+def transfer_factory():
+    def transfer():
+        return Transaction()
+    return transfer
