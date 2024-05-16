@@ -10,11 +10,15 @@ def create_database(engine):
         print("Erreur lors de la création de la base de données:", e)
 
 def insert_data(session):
-    account1 = Account(balance=100.0)
-    account2 = Account(balance=50.0)
-    session.add_all([account1, account2])
-    session.commit()
-    print("Données insérées avec succès.")
+    try:
+        account1 = Account(balance=100.0)
+        account2 = Account(balance=50.0)
+        session.add_all([account1, account2])
+        session.commit()
+        print("Données insérées avec succès.")
+    except Exception as e:
+        session.rollback()
+        print("Erreur lors de l'insertion des données:", e)
 
 def update_data(session):
     try:
