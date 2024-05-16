@@ -1,18 +1,19 @@
 from model import Account
 
 def insert_data(session):
+   
     try:
         account1 = Account()
-        account1.create_account(session, initial_balance=100)
+        account1.create_account(initial_balance=100)
         
         account2 = Account()
-        account2.create_account(session, initial_balance=50)
+        account2.create_account(initial_balance=50)
         
         account3 = Account()
-        account3.create_account(session)
+        account3.create_account()
 
         account4 = Account()
-        account4.create_account(session, initial_balance=199.99)
+        account4.create_account(initial_balance=199.99)
 
         session.commit()
         print("Données insérées avec succès.")

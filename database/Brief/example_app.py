@@ -1,31 +1,27 @@
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Float
-from sqlalchemy.orm import declarative_base, sessionmaker, scoped_session, relationship
-
+"""
+This script allows to play a simple scenario, 
+to simulate the code workflow.
+"""
 
 from bank import Account
-from init_db import Base, engine, Session
- 
-
-def main():
-	try:
-
-		Session = sessionmaker(bind=engine)
-		session = Session()  
-
-		account1 = Account(balance=100)
-		account2 = Account(balance=50)
-		account3 = Account()
-		session.add(account3)
-		session.add(account1)
-		session.add(account2)
+from init_db import init_db_connection
 
 
-		session.commit()
-		session.close()
+def main() -> None:
+    engine, Session = init_db_connection(debug=True)
 
-		print("Données insérées avec succès.")
-	except Exception as e:
-		print("Erreur lors de l'insertion des données:", e)
-	
-if __name__ == "**main**":
-	main()
+    with Session() as session:
+        # Accounts creation
+        account1 = Account(session, account_id=1, balance=100)
+        account2 = Account(session, account_id=2, balance=50)
+        session.add_all([account1, account2])
+
+        # Accounts transfer (Note: commits all inside the method)
+        account1.transfer(other=account2, amount=50)  
+
+    # Close all connections
+    engine.dispose()
+
+
+if __name__ == "__main__":
+    main()

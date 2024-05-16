@@ -1,6 +1,6 @@
-pytest
+mock-alchemy<2
+pytest<9
+SQLAlchemy<3
 requests
-SQLAlchemy
 mysql-connector-python
 python-dotenv
-mock-alchemy
