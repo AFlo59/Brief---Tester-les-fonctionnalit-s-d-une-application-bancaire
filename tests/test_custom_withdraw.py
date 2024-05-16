@@ -29,8 +29,8 @@ def test_withdraw_insufficient_funds(session, account_factory):
     assert len(account.transactions) == initial_transaction_count == 0
 
 def test_withdraw_negative_amount(session, account_factory):
-    initial_balance = 100.0
-    account = account_factory(initial_balance=initial_balance)
+    account = account_factory(100.0)
+    initial_balance = account.balance
     initial_transaction_count = len(account.transactions)
     withdrawal_amount = -50.0
 
@@ -39,11 +39,11 @@ def test_withdraw_negative_amount(session, account_factory):
         transaction.withdraw(session, account, withdrawal_amount)
 
     assert account.balance == initial_balance
-    assert len(account.transactions) == initial_transaction_count
+    assert len(account.transactions) == initial_transaction_count == 0
 
 def test_withdraw_zero_amount(session, account_factory):
-    initial_balance = 100.0
-    account = account_factory(initial_balance=initial_balance)
+    account = account_factory(100.0)
+    initial_balance = account.balance
     initial_transaction_count = len(account.transactions)
     withdrawal_amount = 0.0
 
@@ -52,4 +52,4 @@ def test_withdraw_zero_amount(session, account_factory):
         transaction.withdraw(session, account, withdrawal_amount)
 
     assert account.balance == initial_balance
-    assert len(account.transactions) == initial_transaction_count
+    assert len(account.transactions) == initial_transaction_count == 0
