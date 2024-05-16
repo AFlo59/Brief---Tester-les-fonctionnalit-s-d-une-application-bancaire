@@ -3,10 +3,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database.Custom import model as models
 
-# Define a fixture for the SQLAlchemy session
+
 @pytest.fixture(scope='function')
 def session():
-    # Create an in-memory SQLite database for testing
     engine = create_engine('sqlite:///:memory:')
     models.Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
@@ -23,4 +22,26 @@ class TestDeposit:
         
         assert account.balance == 50
         assert transaction.type == "Deposit"
+
+    def test_deposit_zero(self, session):
+        account = models.Account()
+        account.create_account(session, 50.0)
+        transaction = models.Transaction()
+        
+        with pytest.raises(ValueError, match="Deposit amount must be greater than zero."):
+            transaction.deposit(session, 0, account)
+
+            assert account.balance == 50
+        
+
+    def test_deposit_negative(self, session):
+        account = models.Account()
+        account.create_account(session, 50.0)
+        transaction = models.Transaction()
+        
+        with pytest.raises(ValueError, match="Deposit amount must be greater than zero."):
+            transaction.deposit(session, -10, account)
+
+            assert account.balance == 50
+        
 
