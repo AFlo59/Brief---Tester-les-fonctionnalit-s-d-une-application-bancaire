@@ -44,7 +44,10 @@ class Transaction(Base):
     timestamp = Column(DateTime, default=datetime.now)
     accounts = relationship('Account', secondary=account_transaction_association, back_populates='transactions')
 
-    def deposit(self, session, amount, account):
+    def __init__(self, amount=0.0):
+        self.amount = amount
+
+    def deposit(self, session, account, amount):
         if amount <= 0:
             raise ValueError("Deposit amount must be greater than zero.")
         
@@ -60,7 +63,7 @@ class Transaction(Base):
         session.commit()
         return self  
 
-    def withdraw(self, session, amount, account):
+    def withdraw(self, session, account, amount):
         if amount <= 0:
             raise ValueError("Withdrawal amount must be greater than zero.")
         
@@ -78,8 +81,8 @@ class Transaction(Base):
         session.add(account)
         session.commit()
         return self
-
-    def transfer(self, session, amount, account_source, account_target):
+    
+    def transfer(self, session, account_source, account_target, amount):
         if account_source == account_target:
             raise ValueError("The target account must be different from the source account.")
         
@@ -87,10 +90,38 @@ class Transaction(Base):
             raise ValueError("Transfer amount must be greater than zero.")
 
         withdrawal = Transaction()
-        withdrawal.withdraw(session, amount, account_source)
+        withdrawal.withdraw(session, account_source, amount)
     
         deposit = Transaction()
-        deposit.deposit(session, amount, account_target)
+        deposit.deposit(session, account_target, amount)
             
         session.commit()
         return withdrawal, deposit
+
+    # def transfer(self, session, amount, account_source, account_target):
+    #     if account_source == account_target:
+    #         raise ValueError("The target account must be different from the source account.")
+        
+    #     if amount <= 0:
+    #         raise ValueError("Transfer amount must be greater than zero.")
+        
+    #     if amount > account_source.balance:
+    #         raise ValueError("Insufficient funds.")
+
+    #     self.amount = amount
+    #     self.type = "Transfer"
+    #     self.timestamp = datetime.now()
+
+    #     # Withdraw from source account
+    #     account_source.balance -= amount
+    #     self.accounts.append(account_source)
+    #     session.add(account_source)
+
+    #     # Deposit into target account
+    #     account_target.balance += amount
+    #     self.accounts.append(account_target)
+    #     session.add(account_target)
+
+    #     session.add(self)
+    #     session.commit()
+    #     return self

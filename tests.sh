@@ -1,2 +1,3 @@
-pytest tests/test_custom.py
-pytest tests/test_brief.py
+pytest tests/test_custom_deposit.py
+pytest tests/test_custom_withdraw.py
+pytest tests/test_custom_transfer.py
