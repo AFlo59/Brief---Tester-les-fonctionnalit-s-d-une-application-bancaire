@@ -3,12 +3,14 @@ from database.Custom import model as models
 
 
 def test_transfer_normal(session, account_factory):
-    initial_balance_source = 100.0
-    initial_balance_target = 50.0
-    account_source = account_factory(initial_balance=initial_balance_source)
-    account_target = account_factory(initial_balance=initial_balance_target)
+    account_source = account_factory(100)
+    account_target = account_factory()
+
+    initial_balance_source = account_source.balance
+    initial_balance_target = account_target.balance
     initial_transaction_count_source = len(account_source.transactions)
     initial_transaction_count_target = len(account_target.transactions)
+
     transfer_amount = 50.0
 
     transaction = models.Transaction()
@@ -22,12 +24,14 @@ def test_transfer_normal(session, account_factory):
     assert len(account_target.transactions) == initial_transaction_count_target + 1
 
 def test_transfer_insufficient_funds(session, account_factory):
-    initial_balance_source = 100.0
-    initial_balance_target = 50.0
-    account_source = account_factory(initial_balance=initial_balance_source)
-    account_target = account_factory(initial_balance=initial_balance_target)
+    account_source = account_factory()
+    account_target = account_factory()
+
+    initial_balance_source = account_source.balance
+    initial_balance_target = account_target.balance
     initial_transaction_count_source = len(account_source.transactions)
     initial_transaction_count_target = len(account_target.transactions)
+    
     transfer_amount = 200.0
 
     with pytest.raises(ValueError):
@@ -40,12 +44,14 @@ def test_transfer_insufficient_funds(session, account_factory):
     assert len(account_target.transactions) == initial_transaction_count_target
 
 def test_transfer_negative_amount(session, account_factory):
-    initial_balance_source = 100.0
-    initial_balance_target = 50.0
-    account_source = account_factory(initial_balance=initial_balance_source)
-    account_target = account_factory(initial_balance=initial_balance_target)
+    account_source = account_factory(100)
+    account_target = account_factory()
+
+    initial_balance_source = account_source.balance
+    initial_balance_target = account_target.balance
     initial_transaction_count_source = len(account_source.transactions)
     initial_transaction_count_target = len(account_target.transactions)
+    
     transfer_amount = -50.0
 
     with pytest.raises(ValueError):
@@ -58,13 +64,16 @@ def test_transfer_negative_amount(session, account_factory):
     assert len(account_target.transactions) == initial_transaction_count_target
 
 def test_transfer_zero_amount(session, account_factory):
-    initial_balance_source = 100.0
-    initial_balance_target = 50.0
-    account_source = account_factory(initial_balance=initial_balance_source)
-    account_target = account_factory(initial_balance=initial_balance_target)
+    account_source = account_factory(100)
+    account_target = account_factory(50)
+
+    initial_balance_source = account_source.balance
+    initial_balance_target = account_target.balance
     initial_transaction_count_source = len(account_source.transactions)
     initial_transaction_count_target = len(account_target.transactions)
-    transfer_amount = 0.0
+    
+    transfer_amount = 0
+
 
     with pytest.raises(ValueError):
         transaction = models.Transaction()
